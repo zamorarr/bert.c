@@ -3,7 +3,7 @@
 import struct
 
 # text vocab
-vocab = ["b", "h", "p", "##g", "##n", "##s", "##u", "##gs", "hu", "hug"]
+vocab = ["[UNK]", "b", "h", "p", "##g", "##n", "##s", "##u", "##gs", "hu", "hug"]
 #vocab = ["a", "ab", "abc", "abcd", "abcde", "abcdef", "abcdefg"]
 vocab_size = len(vocab)
 

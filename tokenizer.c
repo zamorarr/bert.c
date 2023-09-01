@@ -95,16 +95,10 @@ void encode_word(Tokenizer *t, char *word, char *str_buffer, int *tokens, int *n
   //   a. start from full word and keep shortening
   //   b. if none, return UNK
   // 3. recursively encode the remaining substring
-  // size_t start = 0;
-  // size_t end = word_size;
-
-  // char substring[word_size];
-  // //word[0:word_size]
-  // //str_lookup(char *str, TokenIndex *vocab_sorted, unsigned int vocab_size)
   size_t len = strlen(word);
   int id;
-  // size_t end = len;
   
+  // look for largest substring
   for (int i = len; i > 0; i--) {
     // copy substring into str_buffer
     strncpy(str_buffer, word, i);
@@ -118,8 +112,14 @@ void encode_word(Tokenizer *t, char *word, char *str_buffer, int *tokens, int *n
       tokens[(*n_tokens)++] = id;
       break;
     }
-
   }
+
+  if (id == -1) {
+    // no match found
+    tokens[(*n_tokens)++] = 0; // or whatever the UNK token is
+  }
+
+  // continue along with remaining substring
 
   // return 0;
 }
