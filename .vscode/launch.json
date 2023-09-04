@@ -6,7 +6,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/tokenizer",
-      "args": ["${workspaceFolder}/vocab.bin"],
+      "args": ["${workspaceFolder}/vocab.bin", "hugs bugs pugs mugs"],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
       "environment": [],

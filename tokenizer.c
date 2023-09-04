@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <ctype.h> // tolower
 
 #define FAIL(...) { fprintf(stderr, __VA_ARGS__); exit(EXIT_FAILURE); }
 
@@ -79,15 +80,6 @@ void free_tokenizer(Tokenizer *t) {
   free(t->vocab_sorted);
 }
 
-void encode(Tokenizer *t, char *text, int8_t bos, int8_t eos, int *tokens, int *n_tokens) {
-  // encode input text into a pre-allocated output tokens[] array
-  if (text == NULL) FAIL("cannot encode NULL text\n")
-
-  // split text into words
-
-  // tempoary buffer to store merge candidates?
-}
-
 void encode_word(Tokenizer *t, char *word, char *str_buffer, int *tokens, int *n_tokens) {
   if (word == NULL) FAIL("cannot encode NULL word\n")
 
@@ -96,33 +88,94 @@ void encode_word(Tokenizer *t, char *word, char *str_buffer, int *tokens, int *n
   //   b. if none, return UNK
   // 3. recursively encode the remaining substring
   size_t len = strlen(word);
+  int start = 0;
+  int end = len;
+
+  int *subtokens = malloc(len * sizeof(int));
+  int n_subtokens = 0;
   int id;
   
   // look for largest substring
-  for (int i = len; i > 0; i--) {
-    // copy substring into str_buffer
-    strncpy(str_buffer, word, i);
-    str_buffer[i] = '\0';
+  while (start < len) {
+    // loop until we have parsed every chr into a subtoken
+    end = len;
+    while (start < end) {
+      // add substring to buffer
+      if (start > 0) {
+        // prefix with ## since substring does not begin at start of word
+        strcpy(str_buffer, "##");
+        strncpy(str_buffer + 2, word + start, end - start);
+        str_buffer[end - start + 2] = '\0';
+      } else {
+        strncpy(str_buffer, word, end);
+        str_buffer[end] = '\0';
+      }
 
-    // check if substring in vocab
-    id = str_lookup(str_buffer, t->vocab_sorted, t->vocab_size);
+      // lookup substring in vocab
+      id = str_lookup(str_buffer, t->vocab_sorted, t->vocab_size);
 
-    if (id != -1) {
-      // found in vocab!
-      tokens[(*n_tokens)++] = id;
-      break;
+      // if substring is in vocab, add and break here
+      if (id != -1) {
+        subtokens[n_subtokens++] = id;
+        break;
+      }
+
+      // otherwise continue looking at smaller substring
+      end--;
     }
+
+    // if could not find any match, stop looking
+    if (id == -1) break;
+
+    // otherwise start looking at remaining substring
+    start = end;
   }
 
   if (id == -1) {
-    // no match found
-    tokens[(*n_tokens)++] = 0; // or whatever the UNK token is
+      // if no match found for at least one substring, the whole word is UNK
+    tokens[(*n_tokens)++] = 0; // or whatever UNK id is
+  } else {
+    // if matches found, append subtokens to tokens
+    for (int i = 0; i < n_subtokens; i++) {
+      tokens[(*n_tokens)++] = subtokens[i];
+    }
   }
 
-  // continue along with remaining substring
-
-  // return 0;
+  // memory clean up
+  free(subtokens);
 }
+
+void encode(Tokenizer *t, const char *text, int *tokens, int *n_tokens) {
+  // encode input text into a pre-allocated output tokens[] array
+  if (text == NULL) FAIL("cannot encode NULL text\n")
+
+  // tempoary buffer to store merge candidates?
+  char *str_buffer = (char*) malloc((t->max_token_size + 1) * sizeof(char));
+
+  // copy text (because strtok will modify when it runs)
+  size_t len = strlen(text);
+  char *copy = (char*) malloc((len + 1) * sizeof(char));
+  strcpy(copy, text);
+
+  // lowercase? normalize?
+  for (int i = 0; i < len; i++) {
+    copy[i] = tolower(copy[i]);
+  }
+
+  // split text into words
+  const char *delims = " \t";
+  char *word = strtok(copy, delims);
+
+  while (word != NULL) {
+    encode_word(t, word, str_buffer, tokens, n_tokens);
+    word = strtok(NULL, delims);
+  }
+
+  // free memory
+  free(str_buffer);
+  free(copy);
+}
+
 
 // CLI
 void error_usage() {
@@ -133,10 +186,12 @@ void error_usage() {
 
 int main(int argc, char *argv[]) {
   char *tokenizer_path;
+  char *prompt;
 
   // poor man's C argparse
-  if (argc >= 2) { 
+  if (argc >= 3) { 
     tokenizer_path = argv[1];
+    prompt = argv[2];
   } else {
     error_usage();
   }
@@ -150,22 +205,21 @@ int main(int argc, char *argv[]) {
   //printf("%s at %i\n", tokenizer.vocab[3], str_lookup(tokenizer.vocab[3], tokenizer.vocab_sorted, tokenizer.vocab_size));
   //printf("%s at %i\n", "blahblah", str_lookup("blahblah", tokenizer.vocab_sorted, tokenizer.vocab_size));
 
-  char *str_buffer = (char*) malloc((tokenizer.max_token_size + 1) * sizeof(char));
-  char *prompt = "hugs";
+  //char *str_buffer = (char*) malloc((tokenizer.max_token_size + 1) * sizeof(char));
   int *tokens = (int*) malloc((strlen(prompt) + 3) * sizeof(int)); // +3 for \0, BOS, EOS
   int n_tokens = 0;
-  encode_word(&tokenizer, prompt, str_buffer, tokens, &n_tokens);
+  //encode_word(&tokenizer, prompt, str_buffer, tokens, &n_tokens);
+  encode(&tokenizer, prompt, tokens, &n_tokens);
 
   printf("\nprompt: %s\n", prompt);
   printf("n_tokens: %i\n", n_tokens);
 
   for (int i = 0; i < n_tokens; i++) {
-    printf("[%i] %s | id = %i\n", i, tokenizer.vocab[(*tokens + i)], *(tokens + i));
+    printf("[%i] %s | id = %i\n", i, tokenizer.vocab[tokens[i]], tokens[i]);
   }
 
   // memory cleanup
   free_tokenizer(&tokenizer);
-  free(str_buffer);
   free(tokens);
 
   return EXIT_SUCCESS;
