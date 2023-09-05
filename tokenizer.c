@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
   printf("n_tokens: %i\n", n_tokens);
 
   for (int i = 0; i < n_tokens; i++) {
-    printf("[%i] %s | id = %i\n", i, tokenizer.vocab[tokens[i]], tokens[i]);
+    printf("[%i] %-*s | id = %i\n", i, tokenizer.max_token_size, tokenizer.vocab[tokens[i]], tokens[i]);
   }
 
   // memory cleanup
