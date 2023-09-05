@@ -4,7 +4,11 @@
 #include <string.h>
 #include <ctype.h> // tolower
 
-#define FAIL(...) { fprintf(stderr, __VA_ARGS__); exit(EXIT_FAILURE); }
+#define FAIL(...) \
+  do { \
+    fprintf(stderr, __VA_ARGS__); \
+    exit(EXIT_FAILURE); \
+  } while (0)
 
 // WordPiece Tokenizer
 typedef struct {
@@ -33,14 +37,14 @@ int str_lookup(char *str, TokenIndex *vocab_sorted, unsigned int vocab_size) {
 void build_tokenizer(Tokenizer *t, char *path) {
   // read in file
   FILE *file = fopen(path, "rb");
-  if (!file) FAIL("couldn't load %s\n", path)
+  if (!file) FAIL("couldn't load %s\n", path);
 
   // read vocab size
-  if (fread(&t->vocab_size, sizeof(int), 1, file) != 1) FAIL("could not read vocab size\n")
+  if (fread(&t->vocab_size, sizeof(int), 1, file) != 1) FAIL("could not read vocab size\n");
   printf("vocab size: %i\n", t->vocab_size);
 
   // read max_token_size
-  if (fread(&t->max_token_size, sizeof(int), 1, file) != 1) FAIL("could not read max_token_size\n")
+  if (fread(&t->max_token_size, sizeof(int), 1, file) != 1) FAIL("could not read max_token_size\n");
   printf("max token size: %i\n", t->max_token_size);
 
   // malloc space to hold vocab
@@ -50,12 +54,12 @@ void build_tokenizer(Tokenizer *t, char *path) {
   // read vocab
   for (int i = 0; i < t->vocab_size; i++) {
     // get token size
-    if (fread(&token_len, sizeof(int), 1, file) != 1) FAIL("could not read token size for token %i\n", i)
+    if (fread(&token_len, sizeof(int), 1, file) != 1) FAIL("could not read token size for token %i\n", i);
     printf("[%i] %i bytes: ", i, token_len);
     
     // get token
     t->vocab[i] = (char*) malloc(token_len + 1); // +1 for the null terminator
-    if (fread(t->vocab[i], token_len, 1, file) != 1) FAIL("could not read token %i\n", i)
+    if (fread(t->vocab[i], token_len, 1, file) != 1) FAIL("could not read token %i\n", i);
     t->vocab[i][token_len] = '\0'; // add null terminator
 
     // print token
@@ -81,7 +85,7 @@ void free_tokenizer(Tokenizer *t) {
 }
 
 void encode_word(Tokenizer *t, char *word, char *str_buffer, int *tokens, int *n_tokens) {
-  if (word == NULL) FAIL("cannot encode NULL word\n")
+  if (word == NULL) FAIL("cannot encode NULL word\n");
 
   // 1. find largest substring in the vocab
   //   a. start from full word and keep shortening
@@ -147,7 +151,7 @@ void encode_word(Tokenizer *t, char *word, char *str_buffer, int *tokens, int *n
 
 void encode(Tokenizer *t, const char *text, int *tokens, int *n_tokens) {
   // encode input text into a pre-allocated output tokens[] array
-  if (text == NULL) FAIL("cannot encode NULL text\n")
+  if (text == NULL) FAIL("cannot encode NULL text\n");
 
   // tempoary buffer to store merge candidates?
   char *str_buffer = (char*) malloc((t->max_token_size + 1) * sizeof(char));
