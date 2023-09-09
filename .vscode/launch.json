@@ -5,7 +5,7 @@
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/tokenizer",
+      "program": "${workspaceFolder}/build/tokenize",
       "args": ["${workspaceFolder}/vocab.bin", "hugs bugs pugs mugs"],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",

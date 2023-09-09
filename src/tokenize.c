@@ -41,11 +41,11 @@ void build_tokenizer(Tokenizer *t, char *path) {
 
   // read vocab size
   if (fread(&t->vocab_size, sizeof(int), 1, file) != 1) FAIL("could not read vocab size\n");
-  printf("vocab size: %i\n", t->vocab_size);
+  //printf("vocab size: %i\n", t->vocab_size);
 
   // read max_token_size
   if (fread(&t->max_token_size, sizeof(int), 1, file) != 1) FAIL("could not read max_token_size\n");
-  printf("max token size: %i\n", t->max_token_size);
+  //printf("max token size: %i\n", t->max_token_size);
 
   // malloc space to hold vocab
   t->vocab = (char**) malloc(t->vocab_size * sizeof(char*));
@@ -55,7 +55,7 @@ void build_tokenizer(Tokenizer *t, char *path) {
   for (int i = 0; i < t->vocab_size; i++) {
     // get token size
     if (fread(&token_len, sizeof(int), 1, file) != 1) FAIL("could not read token size for token %i\n", i);
-    printf("[%i] %i bytes: ", i, token_len);
+    //printf("[%i] %i bytes: ", i, token_len);
     
     // get token
     t->vocab[i] = (char*) malloc(token_len + 1); // +1 for the null terminator
@@ -63,7 +63,7 @@ void build_tokenizer(Tokenizer *t, char *path) {
     t->vocab[i][token_len] = '\0'; // add null terminator
 
     // print token
-    printf("%s\n", t->vocab[i]);
+    //printf("%s\n", t->vocab[i]);
   }
 
   // close file
@@ -183,8 +183,8 @@ void encode(Tokenizer *t, const char *text, int *tokens, int *n_tokens) {
 
 // CLI
 void error_usage() {
-  fprintf(stderr, "Usage: tokenize path\n");
-  fprintf(stderr, "Example: tokenize tokenizer.bin\n");
+  fprintf(stderr, "Usage: tokenize path prompt\n");
+  fprintf(stderr, "Example: tokenize tokenizer.bin \"hugs bugs mugs\"\n");
   exit(EXIT_FAILURE);
 }
 
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
   //encode_word(&tokenizer, prompt, str_buffer, tokens, &n_tokens);
   encode(&tokenizer, prompt, tokens, &n_tokens);
 
-  printf("\nprompt: %s\n", prompt);
+  printf("prompt: %s\n", prompt);
   printf("n_tokens: %i\n", n_tokens);
 
   for (int i = 0; i < n_tokens; i++) {

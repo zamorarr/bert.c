@@ -3,9 +3,10 @@
 CC = gcc
 
 # build tokenizer
-tokenizer: tokenizer.c
-	$(CC) -O3 -o tokenizer tokenizer.c -lm
+.PHONY: tokenizer
+tokenize: src/tokenize.c
+	$(CC) -O3 -o build/tokenize src/tokenize.c -lm
 
 # clean
 clean:
-	rm -f tokenizer
+	rm -f build
