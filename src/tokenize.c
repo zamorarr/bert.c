@@ -155,29 +155,61 @@ void encode(Tokenizer *t, const char *text, int *tokens, int *n_tokens) {
 
   // tempoary buffer to store merge candidates?
   char *str_buffer = (char*) malloc((t->max_token_size + 1) * sizeof(char));
+  char *word_buffer = (char*) malloc((t->max_token_size + 1) * sizeof(char));
 
   // copy text (because strtok will modify when it runs)
   size_t len = strlen(text);
-  char *copy = (char*) malloc((len + 1) * sizeof(char));
-  strcpy(copy, text);
-
-  // lowercase? normalize?
-  for (int i = 0; i < len; i++) {
-    copy[i] = tolower(copy[i]);
-  }
 
   // split text into words
-  const char *delims = " \t";
-  char *word = strtok(copy, delims);
+  // also split on punctuation?
+  int start = 0;
+  int current = 0;
+  int word_len = 0;
+  while (current < len) {
+    // hello there! -> [hello,there,!]
+    
+    // check if punctuation
+    if (ispunct(text[current])) {
+      strncpy(word_buffer, text + current, 1);
+      word_buffer[1] = '\0';
+      encode_word(t, word_buffer, str_buffer, tokens, n_tokens);
+      current++;
+      continue;
+    }
+    
+    // skip whitespace
+    while (isspace(text[current])) {
+      current++;
+    }
 
-  while (word != NULL) {
-    encode_word(t, word, str_buffer, tokens, n_tokens);
-    word = strtok(NULL, delims);
+    // check if we're done
+    if (current >= len) break;
+
+    // set start to current position
+    start = current;
+
+    // get subword
+    while ((current + 1) < len && !isspace(text[current + 1]) && !ispunct(text[current + 1])) {
+      current++;
+    }
+
+    // found word, copy into buffer and encode
+    word_len = current - start + 1;
+    strncpy(word_buffer, text + start, word_len);
+    word_buffer[word_len] = '\0';
+    // lowercase? normalize? utf8proc?
+    for (int i = 0; i < word_len; i++) {
+      word_buffer[i] = tolower(word_buffer[i]);
+    }
+    encode_word(t, word_buffer, str_buffer, tokens, n_tokens);
+
+    // move to next char
+    current++;
   }
 
   // free memory
   free(str_buffer);
-  free(copy);
+  free(word_buffer);
 }
 
 

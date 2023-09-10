@@ -2,9 +2,14 @@
 # sample vocab taken from https://huggingface.co/learn/nlp-course/chapter6/6
 import struct
 
-# text vocab
+# test vocab
 vocab = ["[UNK]", "b", "h", "p", "##g", "##n", "##s", "##u", "##gs", "hu", "hug"]
 vocab_size = len(vocab)
+
+# bert vocab from a sentence transformer
+with open("py/all-MiniLM-L6-v2-vocab.txt", "r") as f:
+    vocab = [line.rstrip() for line in f]
+    vocab_size = len(vocab)
 
 # bytes vocab
 tokens = [w.encode('utf-8') for w in vocab]

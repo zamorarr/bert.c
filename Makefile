@@ -5,7 +5,7 @@ CC = gcc
 # build tokenizer
 .PHONY: tokenizer
 tokenize: src/tokenize.c
-	$(CC) -O3 -o build/tokenize src/tokenize.c -lm
+	$(CC) -g -O0 -o build/tokenize src/tokenize.c -lm
 
 # clean
 clean:
