@@ -220,6 +220,8 @@ void error_usage() {
   exit(EXIT_FAILURE);
 }
 
+// tip: to input a special character to bash use ANSI C like strings
+// ex: build/tokenize build/vocab.bin $'hello\ngoodbye'
 int main(int argc, char *argv[]) {
   char *tokenizer_path;
   char *prompt;
