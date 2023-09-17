@@ -153,7 +153,7 @@ void encode_word(Tokenizer *t, char *word_raw, char *str_buffer, int *tokens, in
 
   // memory clean up
   free(subtokens);
-  free(word);
+  free(normalized);
 }
 
 void encode(Tokenizer *t, const char *text, int *tokens, int *n_tokens) {
