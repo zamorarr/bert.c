@@ -20,3 +20,12 @@ ids_are(input, [101, 7592, 1029, 9119, 102])
 prompt = ["hello\ngoodbye"]
 input = tokenizer(prompt, padding=True, truncation=True, return_tensors='pt')
 ids_are(input, [101, 7592, 9119, 102])
+
+prompt = ["poof deleon"]
+input = tokenizer(prompt, padding=True, truncation=True, return_tensors='pt')
+ids_are(input, [101, 13433, 11253, 3972, 10242, 102])
+
+prompt = ["poivrée"]
+input = tokenizer(prompt, padding=True, truncation=True, return_tensors='pt')
+ids_are(input, [101, 13433, 12848, 9910, 102])
+tokenizer.decode([101, 13433, 12848, 9910, 102])

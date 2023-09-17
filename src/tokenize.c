@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h> // tolower
+#include <utf8proc.h>
 
 #define FAIL(...) \
   do { \
@@ -84,8 +85,13 @@ void free_tokenizer(Tokenizer *t) {
   free(t->vocab_sorted);
 }
 
-void encode_word(Tokenizer *t, char *word, char *str_buffer, int *tokens, int *n_tokens) {
-  if (word == NULL) FAIL("cannot encode NULL word\n");
+void encode_word(Tokenizer *t, char *word_raw, char *str_buffer, int *tokens, int *n_tokens) {
+  if (word_raw == NULL) FAIL("cannot encode NULL word\n");
+
+  // normalize and remove stripmarks (accents)
+  unsigned char *normalized;
+  utf8proc_map((unsigned char*) word_raw, 0, &normalized, UTF8PROC_DECOMPOSE | UTF8PROC_STRIPMARK | UTF8PROC_NULLTERM);
+  char *word = (char*) normalized;
 
   // 1. find largest substring in the vocab
   //   a. start from full word and keep shortening
@@ -147,6 +153,7 @@ void encode_word(Tokenizer *t, char *word, char *str_buffer, int *tokens, int *n
 
   // memory clean up
   free(subtokens);
+  free(word);
 }
 
 void encode(Tokenizer *t, const char *text, int *tokens, int *n_tokens) {
